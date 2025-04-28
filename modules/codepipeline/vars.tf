@@ -1,0 +1,9 @@
+variable "aws_region" {}
+variable "name" {}
+variable "role_arn" {}
+variable "artifact_store_s3" {}
+variable "bitbucket_owner" {}
+variable "bitbucket_repo" {}
+variable "bitbucket_branch" {}
+variable "bitbucket_oauth_token" {}
+variable "codebuild_project_name" {}
