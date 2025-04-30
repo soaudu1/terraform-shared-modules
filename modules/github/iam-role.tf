@@ -83,3 +83,40 @@ variable "github_org_or_user" {
 #  type        = string
 #  default     = "master"
 #}
+
+# IAM Policy for CodeArtifact Publish Access
+resource "aws_iam_policy" "codeartifact_publish_policy" {
+  name = "GitHubActionsCodeArtifactPublishPolicy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "codeartifact:GetAuthorizationToken",
+          "codeartifact:GetRepositoryEndpoint",
+          "codeartifact:PublishPackageVersion",
+          "codeartifact:ReadFromRepository"
+        ],
+        Effect = "Allow",
+        Resource = "*"
+      },
+      {
+        Action = "sts:GetServiceBearerToken",
+        Effect = "Allow",
+        Resource = "*",
+        Condition = {
+          StringEquals = {
+            "sts:AWSServiceName" = "codeartifact.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+}
+
+# Attach the CodeArtifact policy to the GitHub Actions role
+resource "aws_iam_role_policy_attachment" "codeartifact_policy_attachment" {
+  role       = aws_iam_role.github_actions_role.name
+  policy_arn = aws_iam_policy.codeartifact_publish_policy.arn
+}

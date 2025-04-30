@@ -23,7 +23,7 @@ jobs:
       - name: Print GitHub OIDC claims
         run: |
           echo "GITHUB_CONTEXT:"
-          echo "${{ toJson(github) }}"
+          echo "${{ toJson(github) }}" #test
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v$4

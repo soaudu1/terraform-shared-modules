@@ -90,3 +90,17 @@ module "eks" {
 
   tags = local.tags
 }
+
+module "codeartifact" {
+  source = "./codeartifact/"
+
+  domain_name       = "sandbox-domain"
+  repository_name   = "sandbox-repo"
+  description       = "Private artifact store for sandbox environment"
+  external_connections = ["public:npmjs"]
+
+  tags = {
+    Environment = "sandbox"
+    Project     = "eks-sandbox"
+  }
+}
