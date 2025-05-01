@@ -1,0 +1,54 @@
+name: Provision via Terraform
+
+on:
+  push:
+    branches: 
+    - main
+
+jobs:
+  terraform:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init & Plan
+        run: |
+          cd modules
+          terraform init
+          terraform fmt -check
+          terraform validate
+          terraform plan
+
+  # deploy:
+  #   name: Terraform Deploy
+  #   needs: plan
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Use Node.js 14.x
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 14.x
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v2
+  #       with:
+  #         role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
+  #         aws-region: us-east-1
+  #     - name: Initialise project and deploy terraform
+  #       run: |
+  #         cd ../modules/
+  #         terraform fmt
+  #         terraform init
+  #         terraform plan
+  #         terraform apply --auto-approve=true
