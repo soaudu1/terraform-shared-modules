@@ -12,6 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      
+      - name: Dump GitHub context
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log("REPO:", context.repo.owner + "/" + context.repo.repo)
+            console.log("BRANCH:", context.ref)      
+ 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
