@@ -4,28 +4,29 @@ on:
   push:
     branches: 
     - main
-    
+
 jobs:
-  plan:
-    name: Terraform plan
+  terraform:
+    name: Terraform Plan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # - name: Use Node.js 14.x
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: 2
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
           aws-region: us-east-1
-      - name: Initialise project and view terraform plan
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init & Plan
         run: |
-          cd ../modules/
-          terraform fmt
-          terraform init 
+          cd modules
+          terraform init
+          terraform fmt -check
+          terraform validate
           terraform plan
 
   # deploy:
