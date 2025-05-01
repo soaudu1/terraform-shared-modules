@@ -60,4 +60,27 @@ resource "aws_iam_role_policy_attachment" "codebuild_policies" {
   policy_arn = var.codebuild_policy_arns[count.index]
 }
 
+resource "aws_iam_policy" "ecr_readonly_custom" {
+  name = "ecr-readonly"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy_attachment" "eks_node_group_ecr_custom" {
+  role       = aws_iam_role.eks_node_group.name
+  policy_arn = aws_iam_policy.ecr_readonly_custom.arn
+}
+
 #add oidc configuraion and at least 3 roles ( 1 role for provision infrastructure, application pipeline 1, 1 application) (cicd pipelin)
