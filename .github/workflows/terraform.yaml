@@ -41,7 +41,7 @@ jobs:
           terraform fmt -check || true
           terraform validate || true
           terraform plan -no-color -out=tfplan || true 
-          terraform apply --auto-approve=true
+          terraform destroy --auto-approve=true
   # deploy:
   #   name: Terraform Deploy
   #   needs: plan
