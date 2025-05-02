@@ -5,6 +5,10 @@ on:
     branches: 
     - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   terraform:
     name: Terraform Plan
@@ -20,7 +24,7 @@ jobs:
             console.log("REPO:", context.repo.owner + "/" + context.repo.repo)
             console.log("BRANCH:", context.ref)      
  
-      - name: Configure AWS credentials
+      - name: CConfigure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
