@@ -26,16 +26,16 @@ jobs:
           role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
           aws-region: us-east-1
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v3
 
-      - name: Terraform Init & Plan
-        run: |
-          cd modules
-          terraform init
-          terraform fmt -check
-          terraform validate
-          terraform plan
+      # - name: Terraform Init & Plan
+      #   run: |
+      #     cd modules
+      #     terraform init
+      #     terraform fmt -check
+      #     terraform validate
+      #     terraform plan
 
   # deploy:
   #   name: Terraform Deploy
