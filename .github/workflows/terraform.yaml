@@ -28,6 +28,10 @@ jobs:
           role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
           aws-region: ${{ env.AWS_REGION }}
 
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3      
+        
       - name: Terraform Init & Plan
         run: |
           cd $TF_WORKING_DIR
