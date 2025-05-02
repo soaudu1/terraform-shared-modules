@@ -27,7 +27,7 @@ locals {
 # 1. VPC Module
 # ----------------------------------------------------
 module "vpc" {
-  source = "./vpc/"
+  source = "./../../modules/vpc/"
 
   aws_region          = local.aws_region
   name                = "sandbox"
@@ -42,7 +42,7 @@ module "vpc" {
 # 2. IAM Module
 # ----------------------------------------------------
 module "iam" {
-  source = "./iam/"
+  source = "./../../modules/"
 
   aws_region            = local.aws_region
   name                  = "sandbox"
@@ -59,7 +59,7 @@ module "iam" {
 # 3. ECR Module
 # ----------------------------------------------------
 module "ecr" {
-  source = "./ecr/"
+  source = "./../../modules/"
 
   aws_region            = local.aws_region
   name                  = "wep-admin-service"
@@ -72,7 +72,7 @@ module "ecr" {
 # 4. EKS Module
 # ----------------------------------------------------
 module "eks" {
-  source = "./eks/"
+  source = "./../../modules/"
 
   aws_region            = local.aws_region
   name                  = "sandbox"
@@ -92,7 +92,7 @@ module "eks" {
 }
 
 module "codeartifact" {
-  source = "./codeartifact/"
+  source = "./../../modules/"
 
   domain_name       = "sandbox-domain"
   repository_name   = "sandbox-repo"
@@ -103,4 +103,13 @@ module "codeartifact" {
     Environment = "sandbox"
     Project     = "eks-sandbox"
   }
+}
+
+# ----------------------------------------------------
+# 5. ArgoCD Module
+# ----------------------------------------------------
+module "argocd" {
+  source = "./../../modules/argocd/"
+
+  cluster_name = module.eks.cluster_name
 }
