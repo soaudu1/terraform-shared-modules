@@ -104,14 +104,3 @@ module "codeartifact" {
     Project     = "eks-sandbox"
   }
 }
-
-# ----------------------------------------------------
-# 5. ArgoCD Module
-# ----------------------------------------------------
-module "argocd" {
-  source = "./../../modules/argocd/"
-
-  cluster_name = module.eks.cluster_name
-
-  depends_on = [module.eks]
-}
