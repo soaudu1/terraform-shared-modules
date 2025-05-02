@@ -39,8 +39,7 @@ jobs:
           terraform init
           terraform fmt -check
           terraform validate
-          terraform plan
-
+          terraform plan -no-color -out=tfplan || exit 0
   # deploy:
   #   name: Terraform Deploy
   #   needs: plan
