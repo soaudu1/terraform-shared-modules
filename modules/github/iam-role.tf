@@ -137,6 +137,16 @@ resource "aws_iam_role_policy_attachment" "iam_full" {
   policy_arn = "arn:aws:iam::aws:policy/IAMFullAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "eks_cluster" {
+  role       = aws_iam_role.github_actions_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "eks_service" {
+  role       = aws_iam_role.github_actions_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+}
+
 resource "aws_iam_role_policy_attachment" "vpc_full" {
   role       = aws_iam_role.github_actions_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonVPCFullAccess"
