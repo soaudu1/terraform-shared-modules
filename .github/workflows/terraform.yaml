@@ -2,66 +2,78 @@ name: Provision via Terraform
 
 on:
   push:
-    branches: 
-    - main
+    branches:
+      - main
 
 permissions:
   id-token: write
   contents: read
 
-jobs:
-  terraform:
-    name: Terraform Plan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+env:
+  TF_IN_AUTOMATION: true
+  AWS_REGION: us-east-1
+  TF_WORKING_DIR: infra/sandbox
 
-      
-      - name: Dump GitHub context
-        uses: actions/github-script@v7
-        with:
-          script: |
-            console.log("REPO:", context.repo.owner + "/" + context.repo.repo)
-            console.log("BRANCH:", context.ref)      
- 
-      - name: CConfigure AWS credentials using OIDC
-        uses: aws-actions/configure-aws-credentials@v4
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
-          aws-region: us-east-1
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init & Plan
         run: |
-          set +e
-          cd infra/sandbox
+          cd $TF_WORKING_DIR
           terraform init
-          terraform fmt -check || true
-          terraform validate || true
-          terraform plan -no-color -out=tfplan || true 
-          terraform destroy --auto-approve=true
-  # deploy:
-  #   name: Terraform Deploy
-  #   needs: plan
-  #   if: github.ref == 'refs/heads/main'
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Use Node.js 14.x
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 14.x
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v2
-  #       with:
-  #         role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
-  #         aws-region: us-east-1
-  #     - name: Initialise project and deploy terraform
-  #       run: |
-  #         cd ../modules/
-  #         terraform fmt
-  #         terraform init
-  #         terraform plan
-  #         terraform apply --auto-approve=true
+          terraform validate
+          terraform plan -no-color -out=tfplan
+
+  apply:
+    runs-on: ubuntu-latest
+    needs: plan
+    continue-on-error: true  # ← So we can handle failure
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Apply
+        id: tf-apply
+        run: |
+          cd $TF_WORKING_DIR
+          terraform init
+          terraform apply -auto-approve tfplan
+
+  destroy-on-failure:
+    runs-on: ubuntu-latest
+    needs: apply
+    if: failure() && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Destroy (Auto-triggered on Failure)
+        run: |
+          cd $TF_WORKING_DIR
+          terraform init
+          terraform destroy -auto-approve
