@@ -35,7 +35,7 @@ jobs:
 
       - name: Terraform Init & Plan
         run: |
-          cd modules
+          cd infra/sandbox
           terraform init
           terraform fmt -check
           terraform validate
