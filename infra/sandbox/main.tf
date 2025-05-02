@@ -111,5 +111,6 @@ module "codeartifact" {
 module "argocd" {
   source = "./../../modules/argocd/"
 
-  cluster_name = "sandbox"
-}
+  cluster_name = module.eks.cluster_name
+
+  depends_on = [module.eks]}
