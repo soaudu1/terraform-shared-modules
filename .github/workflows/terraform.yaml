@@ -1,4 +1,4 @@
-name: Provision via Terraform
+name: Terraform Provision Sandbox
 
 on:
   push:
@@ -15,7 +15,8 @@ env:
   TF_WORKING_DIR: infra/sandbox
 
 jobs:
-  plan:
+  terraform:
+    name: Terraform Plan, Apply, Destroy on Failure
     runs-on: ubuntu-latest
 
     steps:
@@ -28,62 +29,31 @@ jobs:
           role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
           aws-region: ${{ env.AWS_REGION }}
 
-      
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3      
-        
-      - name: Terraform Init & Plan
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
         run: |
           cd $TF_WORKING_DIR
           terraform init
+
+      - name: Terraform Plan
+        id: tfplan
+        run: |
+          cd $TF_WORKING_DIR
           terraform validate
           terraform plan -no-color -out=tfplan
 
-  apply:
-    runs-on: ubuntu-latest
-    needs: plan
-    continue-on-error: true  # ← So we can handle failure
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        
       - name: Terraform Apply
-        id: tf-apply
+        id: tfapply
         run: |
           cd $TF_WORKING_DIR
-          terraform init
           terraform apply -auto-approve tfplan
+        continue-on-error: true
 
-  destroy-on-failure:
-    runs-on: ubuntu-latest
-    needs: apply
-    if: failure() && github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::920864529120:role/github-actions-role
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Terraform Destroy (Auto-triggered on Failure)
+      - name: Terraform Destroy on Failure
+        if: steps.tfapply.outcome == 'failure'
         run: |
+          echo "Terraform apply failed — destroying resources..."
           cd $TF_WORKING_DIR
-          terraform init
           terraform destroy -auto-approve
