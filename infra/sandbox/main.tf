@@ -1,6 +1,14 @@
 terraform {
   required_version = ">= 1.3.0"
 
+  backend "s3" {
+    bucket         = "demo-sandbox-dex"
+    key            = "sandbox/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "db-demo-sandbox-dex"
+    encrypt        = true
+  }  
+  
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -62,7 +70,7 @@ module "ecr" {
   source = "./../../modules/ecr/"
 
   aws_region            = local.aws_region
-  name                  = "wep-admin-service"
+  name                  = "dex-sandbox-demo"
   image_tag_mutability  = "MUTABLE"
   scan_on_push          = true
   tags                  = local.tags
